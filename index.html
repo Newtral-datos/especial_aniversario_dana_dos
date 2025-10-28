@@ -1,570 +1,521 @@
-<!-- 
-  =============================================
-  INICIO DEL CÓDIGO DE SCROLLYTELLING
-  (Versión solo para Ordenador)
-  =============================================
--->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Especial DANA - Reconstrucción</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+  <style>
+    html, body { margin: 0; padding: 0; font-family: 'Roboto', sans-serif; overflow-x: hidden; width: 100%; }
+    
+    /* Contenedor principal del gráfico (centrado) */
+    aside {
+        width: 100vw; max-width: 100vw; 
+        left: 0; right: 0; 
+    }
 
-<!-- 
-  1. SCRIPT DE TAILWIND CSS
-  ¡Imprescindible!
--->
-<script src="https://cdn.tailwindcss.com"></script>
+    /* El contenedor que envuelve al iframe (gestionado por JS) */
+    .chart-container { 
+        position: relative; 
+        width: 100vw; 
+        max-width: 100vw; 
+        margin: 0 auto; 
+        overflow: hidden; 
+    }
+    
+    /* Estilo para los iframes (del target) */
+    iframe[data-external="1"] { 
+        position: absolute; 
+        inset: 0; 
+        width: 100%; 
+        height: 100%; 
+        border: 0; 
+        display: block; 
+    }
+    
+    /* Estilo para las imágenes (adaptado del original) */
+    a[data-image="1"] {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%; height: 80%;
+        overflow: hidden;
+        display: block;
+    }
+    a[data-image="1"] img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
 
-<!-- 
-  2. BLOQUE DE ESTILOS CSS
-  (Simplificado solo para ordenador)
--->
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-  body { font-family: 'Roboto', sans-serif; }
+    html, body {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
 
-  /* Animación de aparición del texto */
-  .step-content {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-    will-change: opacity, transform;
-  }
-  .step.is-active .step-content {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    /* Reglas de PC: El contenedor del gráfico tiene un max-width */
+    @media (min-width: 768px) {
+      .chart-container { 
+          width: 100%; 
+          max-width: 64rem;
+      }
+      iframe[data-external="1"] { border-radius: 0.5rem; }
+      a[data-image="1"] { border-radius: 0.5rem; }
+    }
+    
+    /* Animación de aparición (del target) */
+    .step-content {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .5s ease-out, transform .5s ease-out;
+      will-change: opacity, transform;
+      /* CLAVE 1: Inicialmente NO queremos que el recuadro blanco robe clics. */
+      pointer-events: none; 
+    }
 
-  /* ----- ESTILOS DE ESCRITORIO (Ahora son los únicos) ----- */
-  
-  /* La columna del gráfico */
-  aside#side-graphic-container {
-    /* 'position: sticky' se aplica a través de clases de Tailwind */
-    /* La altura (h-screen) se aplica con clases de Tailwind */
-  }
+    .step.is-active .step-content { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
 
-  /* El contenedor del gráfico (para apilar) */
-  .chart-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
+    /* CLAVE 2: Reactivar manejo de clics SÓLO en elementos interactivos dentro del recuadro de texto */
+    /* El recuadro blanco en sí sigue dejando pasar clics al iframe de fondo, excepto en estos elementos. */
+    .step-content a, 
+    .step-content iframe,
+    .step-content b[style], 
+    .step-content span[style] {
+        pointer-events: auto !important; 
+    }
+    
+    /* CLAVE 3: Asegurar que el contenedor principal del scroll deja pasar clics */
+    /* Esta es la capa que envuelve todos los 'steps'. Al ponerle pointer-events: none, */
+    /* permitimos que el click llegue al <aside> fijo que sí tiene pointer-events: auto en el iframe activo. */
+    main {
+        pointer-events: none; 
+    }
+    
+    /* CLAVE 4: Reactivar pointer-events SOLO en los elementos que deben ser clicables dentro del MAIN */
+    /* Esto incluye el recuadro de texto (mediante sus elementos interactivos internos) y los iframes inferiores. */
+    .step-content {
+        /* Dejamos el recuadro con pointer-events: none, pero reactivamos en el contenido */
+        /* interactivo dentro (a, iframe, b[style], etc.) */
+    }
 
-  /* Los iframes dentro del contenedor */
-  .chart-container iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
+  </style>
+</head>
+<body class="bg-gray-100">
 
-  /* El texto (transparente, sin fondo) */
-  .step-content {
-    background: transparent;
-    box-shadow: none;
-    backdrop-filter: none;
-    padding: 0;
-  }
-</style>
+  <aside class="fixed top-0 left-0 w-full h-screen z-10 grid place-items-center md:p-4 pointer-events-none">
+    <div class="chart-container">
+      
+      <iframe id="chart-1" src="https://flo.uri.sh/visualisation/25783007/embed"
+              frameborder="0" data-external="1"
+              class="opacity-100 z-10 pointer-events-auto transition-opacity duration-500 ease-in-out"></iframe>
+      
+      <iframe id="chart-2" src="https://flo.uri.sh/visualisation/25783664/embed"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              
+      <iframe id="chart-3" src="https://datawrapper.dwcdn.net/4MT1z/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+      
+      <iframe id="chart-4" src="https://datawrapper.dwcdn.net/jnaSD/4/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              
+      <iframe id="chart-5" src="https://datawrapper.dwcdn.net/LpQvr/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+      
+      <iframe id="chart-6" src="https://datawrapper.dwcdn.net/y4ls1/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-<!-- 
-  3. CONTENIDO HTML DEL SCROLLYTELLING
--->
-<main class="max-w-7xl mx-auto">
+      <iframe id="chart-7" src="https://datawrapper.dwcdn.net/806Hm/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-  <article class="grid grid-cols-2 gap-12 py-16">
+      <iframe id="chart-8" src="https://datawrapper.dwcdn.net/6ET8x/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-    <!-- 
-      ====== COLUMNA IZQUIERDA (Contenedor Wrapper) ====== 
-      Contiene tanto el texto como el nuevo gráfico inferior
-    -->
-    <div class="w-full order-1 relative">
+      <iframe id="chart-9" src="https://datawrapper.dwcdn.net/hJHRS/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-      <!-- ====== TEXTO ====== -->
-      <section class="w-full">
+      <iframe id="chart-10" src="https://datawrapper.dwcdn.net/cYNND/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-        <!-- ===== BLOQUE 1 (Layout Normal) ===== -->
-        <!-- Paso 1.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+      <iframe id="chart-11" src="https://datawrapper.dwcdn.net/Pf3OS/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+
+      <iframe id="chart-12" src="https://datawrapper.dwcdn.net/nRDcF/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+
+      <a id="imagen-1" href="https://x.com/GVA112/status/1851341742986981682" target="_blank" rel="noopener noreferrer"
+         data-image="1"
+         class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out">
+        <img src="https://live.staticflickr.com/65535/54883828800_0221ff998c.jpg" 
+             alt="Fuente: Emergencias Comunidad Valenciana (Cuenta de X)">
+      </a>
+
+      <iframe id="chart-14" src="https://datawrapper.dwcdn.net/03jk9/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+
+      <a id="imagen-2" href="https://x.com/GVA112/status/1851354283263856823" target="_blank" rel="noopener noreferrer"
+         data-image="1"
+         class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out">
+        <img src="https://live.staticflickr.com/65535/54883757188_5731983221_c.jpg" 
+             alt="Fuente: Emergencias Comunidad Valenciana (Cuenta de X)">
+      </a>
+      
+      <iframe id="chart-16" src="https://datawrapper.dwcdn.net/oKdia/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+
+      <iframe id="chart-17" src="https://datawrapper.dwcdn.net/bPwzX/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              
+    </div>
+  </aside>
+
+  <main class="max-w-7xl mx-auto relative z-20 pointer-events-none">
+    <article class="relative">
+      <section class="relative w-full">
+
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-1" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl"> 
             <p><b>07.36.</b> Las zonas del interior de Valencia amanecen bajo el <a href="https://x.com/AEMET_CValencia/status/1851151018395848816">aviso rojo de la Aemet</a> por precipitaciones, ampliándose la <a href="https://x.com/AEMET_CValencia/status/1851019693139657048">alerta naranja</a> emitida la noche anterior.</p>
           </div>
         </div>
-        <!-- Paso 1.2 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-1" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>07.45.</b> Poco después, el Centro de Coordinación de Emergencias de la Generalitat Valenciana (Cecopi) <a href="https://x.com/GVA112/status/1851162867506032804">activa la alerta nivel rojo</a> por fenómenos meteorológicos en el litoral sur.</p>
           </div>
         </div>
-        <!-- Paso 1.3 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-1" data-step-index="2">
-          <div class="step-content">
-            <p><b>09.20.</b> <a href="https://x.com/AEMET_Esp/status/1851177219286044817?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1851177219286044817%7Ctwgr%5E9cbf02abdcc86c93b0312a10f5a2eb77766ab958%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Felpais.com%2Fclima-y-medio-ambiente%2F2024-11-07%2Fasi-fueron-las-horas-clave-antes-de-que-la-catastrofica-riada-del-barranco-del-poyo-arrasara-paiporta.html">Aemet alerta</a> del riesgo extremo por lluvias torrenciales, pidiendo a la población que se aleje de cauces, ramblas y zonas bajas inundables.</p>
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+            <p><b>09.20.</b> <a href="https://x.com/AEMET_Esp/status/1851177219286044817?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1851177219286044817%7Ctwgr%5E9cbf02abdcc86c93b0312a10f5a2eb77766ab958%7Ctwcon%5Es1_&ref_url=httpsa%3A%2F%2Felpais.com%2Fclima-y-medio-ambiente%2F2024-11-07%2Fasi-fueron-las-horas-clave-antes-de-que-la-catastrofica-riada-del-barranco-del-poyo-arrasara-paiporta.html">Aemet alerta</a> del riesgo extremo por lluvias torrenciales, pidiendo a la población que se aleje de cauces, ramblas y zonas bajas inundables.</p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 2 (Layout Normal) ===== -->
-        <!-- Paso 2.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-2" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>10.00.</b> El Centro de Coordinación de Emergencias <a href="https://x.com/GVA112/status/1851190139462013044">amplía la alerta roja</a> a todo el litoral y la zona del interior norte, decretando también la situación de emergencia en la comarca de la Ribera Alta.</p>
           </div>
         </div>
 
-
-        <!-- ===== BLOQUE 3 (Layout 3 Bloques) ===== -->
-        <!-- Paso 3.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-3" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>11.00.</b> El agua empieza a correr por la Rambla del Poyo. En solo media hora el barranco pasó de no contener ningún caudal a superar los 200 m3/s. Se trata de una cifra por encima de los 150 m3/s, el umbral de alerta alto establecido por la <a href="https://saih.chj.es/aforos/13873">Confederación Hidrográfica del Júcar</a> (CHJ). Según sus protocolos, una vez superada esta barrera se debe informar a las autoridades de emergencias.</p>
             <iframe title="Gráfico Inferior 1"
-                     src="https://datawrapper.dwcdn.net/WVKFU/1/" 
-                     frameborder="0" 
-                     scrolling="no"
-                     class="w-full h-[30vh] overflow-hidden mt-6"></iframe>
+                    src="https://datawrapper.dwcdn.net/WVKFU/1/" 
+                    frameborder="0" 
+                    class="w-full h-[40vh] mt-6"></iframe>
           </div>
         </div>
-        <!-- Paso 3.2 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-3" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Esta cifra es superior al caudal correspondiente con los periodos de retorno para 10 años (179 m3/s). Es decir, un umbral superior a esta cifra es algo que sólo se ve una vez cada 10 años.</p>
           </div>
         </div>
-        <!-- Paso 3.3 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-3" data-step-index="2">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>11.45.</b> El Cecopi emite un <a href="https://x.com/GVA112/status/1851223906029355347">aviso especial de alerta hidrológica</a> para los municipios de la cuenca del río Magro por posibles crecidas. Además, informa de <a href="https://x.com/GVA112/status/1851175465932689772">carreteras cortadas</a> y <a href="https://x.com/GVA112/status/1851214852687110589">personas atrapadas</a>.</p>
           </div>
         </div>
-        <!-- Paso 3.4 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-3" data-step-index="3">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Aunque emergencias comienza a recibir alertas por todo el litoral la mayoría de los eventos se concentran en Requena, situado en la zona interior de Valencia, como muestra el registro de incidentes elaborado a partir de las llamadas al 112.</p>
           </div>
         </div>
-        <!-- Paso 3.5 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-3" data-step-index="4">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>En el municipio las llamadas empiezan a recoger avisos por el desbordamiento del barranco y numerosos hogares inundados, teniéndose que rescatar únicamente a una persona atrapada en su vehículo.</p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 4 (Layout 3 Bloques) ===== -->
-        <!-- Paso 4.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-4" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>12.09.</b> La Confederación Hidrográfica del Júcar <a href="https://x.com/CHJucar/status/1853529826692419854/photo/2">avisa a las autoridades</a> de protección civil que el Barranco del Poyo ha alcanzado un caudal de 264 m3/s, produciéndose una rápida crecida, como muestra el correo al que tuvieron acceso <i><a href = "https://elpais.com/clima-y-medio-ambiente/2024-11-07/asi-fueron-las-horas-clave-antes-de-que-la-catastrofica-riada-del-barranco-del-poyo-arrasara-paiporta.html">El País</i></a> y <i><a href="https://www.elmundo.es/comunidad-valenciana/2024/11/04/67291105e4d4d809668b4581.html">El Mundo</a></i>.</p>
             <iframe title="Gráfico Inferior 1"
-                     src="https://datawrapper.dwcdn.net/YPSVz/1/" 
-                     frameborder="0" 
-                     scrolling="no"
-                     class="w-full h-[30vh] overflow-hidden mt-6"></iframe>
+                    src="https://datawrapper.dwcdn.net/YPSVz/1/" 
+                    frameborder="0" 
+                    class="w-full h-[40vh] mt-6"></iframe>
           </div>
         </div>
-        <!-- Paso 4.2 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-4" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>12.20.</b> El Cecopi <a href="https://x.com/GVA112/status/1851230316213551226">emite un aviso especial</a> de alerta hidrológica para los municipios que se encuentran en la zona del barranco del Poyo.</p>
           </div>
         </div>
-        <!-- Paso 4.3 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-4" data-step-index="2">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>12.47.</b> El Ayuntamiento de Paiporta publica un <a href="https://x.com/Ajunt_Paiporta/status/1851229480343253370?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1851229480343253370%7Ctwgr%5E9cbf02abdcc86c93b0312a10f5a2eb77766ab958%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Felpais.com%2Fclima-y-medio-ambiente%2F2024-11-07%2Fasi-fueron-las-horas-clave-antes-de-que-la-catastrofica-riada-del-barranco-del-poyo-arrasara-paiporta.html">aviso sobre el riesgo de lluvia extrema</a>, aunque los efectos de la lluvia todavía no son graves en la zona. Entre las 12.00 y las 13.00, no se reporta a emergencias ningún evento relevante en el municipio.</p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 5 (Layout 3 Bloques) ===== -->
-        <!-- Paso 5.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-5" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>13.20.</b> La Confederación Hidrográfica avisa al Cecopi de que el caudal en el barranco del Poyo está disminuyendo, situándose por debajo del umbral de alerta alto.</p>
             <iframe title="Gráfico Inferior 2"
-                     src="https://datawrapper.dwcdn.net/teBtF/1/" 
-                     frameborder="0" 
-                     scrolling="no"
-                     class="w-full h-[30vh] overflow-hidden mt-6"></iframe>
+                    src="https://datawrapper.dwcdn.net/teBtF/1/" 
+                    frameborder="0" 
+                    class="w-full h-[40vh] mt-6"></iframe>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 6 (Layout bloques) ===== -->
-        <!-- Paso 6.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-6" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>14.00.</b> El Cecopi <a href="https://x.com/GVA112/status/1851252956651237450?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1851252956651237450%7Ctwgr%5E9cbf02abdcc86c93b0312a10f5a2eb77766ab958%7Ctwcon%5Es1_&ref_url=https%3A%2F%2Felpais.com%2Fclima-y-medio-ambiente%2F2024-11-07%2Fasi-fueron-las-horas-clave-antes-de-que-la-catastrofica-riada-del-barranco-del-poyo-arrasara-paiporta.html">extiende la situación de emergencia</a> a la comarca de Utiel-Requena. Durante esta hora, solo en Utiel, emergencias recibe llamadas para informar de la necesidad de realizar 26 rescates.</p>
           </div>
         </div>
-        <!-- Paso 6.2 -->
-        <div class="step pt-[30vh] mb-[30vh] pl-8"
+        <div class="step mb-[30vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-6" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Los ciudadanos empiezan a enfrentarse a situaciones que ponen en riesgo sus vidas. Entre las llamadas se recoge la solicitud de ayuda de una persona en silla de ruedas que no puede refugiarse en zonas elevadas, o numerosos casos de personas mayores que también presentan dificultades para refugiarse en los pisos superiores.</p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 7 (Layout bloques) ===== -->
-        <!-- Paso 7.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-7" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>15.21.</b> La Conselleria de Justicia e Interior de la Generalitat Valenciana solicita al Gobierno central activar la Unidad Militar de Emergencias (UME), <a href="https://x.com/pilarbernabe/status/1851268015351849434">según informa la delegada de Gobierno</a>. A esa hora ya había personas desaparecidas, según informaban medios como <a href="https://x.com/apuntnoticies/status/1851260560031043603">Á Punt</a>, y solo los municipios de Requena y Utiel se vieron afectados por casi una centena de incidentes de emergencia. En este último municipio, la necesidad de rescates en solo una hora se eleva hasta los 46.</p>
           </div>
         </div>
-        <!-- Paso 7.2 -->
-        <div class="step pt-[30vh] mb-[30vh] pl-8"
+        <div class="step mb-[30vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-7" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Las situaciones vividas cada vez son más tensas, y emergencias comienza a registrar llamadas pidiendo rescates urgentes para personas que comienzan a ahogarse. Las personas de mayor edad siguen siendo las que deben hacer frente a un mayor riesgo. Es el caso de un matrimonio de 95 años, subido en una mesa para evitar las inundaciones. </p>
           </div>
         </div>
-        <!-- Paso 7.3 -->
-        <div class="step pt-[30vh] mb-[30vh] pl-8"
+        <div class="step mb-[30vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-7" data-step-index="2">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Comienzan a verse las escenas de personas refugiadas en los techos de sus vehículos tratando de evitar que las riadas se los lleven.</p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 8 (Layout bloques) ===== -->
-        <!-- Paso 8.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-8" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Durante esta hora, los efectos de la dana comienzan a trasladarse hacia el este, como muestran los registros de emergencias. En Requena el número de eventos se reduce hasta 6, mientras que en municipios del litoral como Chiva, Monserrat o Alginet comienzan a aumentar las llamadas al 112.</p>
           </div>
         </div>
-        <!-- Paso 8.2 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-8" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>El caudal en la Rambla del Poyo empieza a repuntar, aunque se sigue manteniendo por debajo del umbral de alerta.</p>
             <iframe title="Gráfico Inferior 3"
-                     src="https://datawrapper.dwcdn.net/Y7E9L/1/" 
-                     frameborder="0" 
-                     scrolling="no"
-                     class="w-full h-[30vh] overflow-hidden mt-6"></iframe>
+                    src="https://datawrapper.dwcdn.net/Y7E9L/1/" 
+                    frameborder="0" 
+                    class="w-full h-[40vh] mt-6"></iframe>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 9 (Layout bloques) ===== -->
-        <!-- Paso 9.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-9" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>17.00.</b> <span href="https://x.com/GVA112/status/1851289218934587493" style="background:#01f3b3; padding:1px 2px; border-radius:2px; color:black; box-shadow:0px 0px 5px 1px rgba(0,0,0,0.07); cursor:pointer;">Comienza la reunión del Cecopi.</span> En ella la <a href="https://x.com/CHJucar/status/1853529826692419854/photo/2">CJH informa sobre el elevado incremento en el caudal</a> de los ríos Júcar y Magro, así como de la declaración del escenario 2 en la presa de Forata. (No se informa sobre la situación del barranco del Poyo, que vuelve a superar el umbral de 150m3/s a las 17.25 horas).</p>
             <iframe title="Gráfico Inferior 4"
-                     src="https://datawrapper.dwcdn.net/6JqJD/1/" 
-                     frameborder="0" 
-                     scrolling="no"
-                     class="w-full h-[30vh] overflow-hidden mt-6"></iframe>
+                    src="https://datawrapper.dwcdn.net/6JqJD/1/" 
+                    frameborder="0" 
+                    class="w-full h-[40vh] mt-6"></iframe>
           </div>
         </div>
-        <!-- Paso 9.2 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-9" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Solo unos minutos después <a href="https://x.com/UMEgob/status/1851293892014178644">los primeros efectivos de la UME</a> se dirigen hacia la comarca de la Plana de Utiel-Requena, donde los avisos a emergencias continúan reduciéndose.</p>
           </div>
         </div>
-        <!-- Paso 9.3 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-9" data-step-index="2">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>17.25</b> Mientras tanto el cauce del barranco del Poyo no deja de aumentar, superándose de nuevo el umbral de alerta alto.</p>
           </div>
         </div>
-        <!-- Paso 9.4 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-9" data-step-index="3">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>17.35</b> El Cecopi <a href="https://x.com/GVA112/status/1851303335917429079">emite un aviso especial</a> por el riesgo de desbordamientos generalizados en las áreas próximas a los ríos Magro y Júcar entre los municipios de Algemesí y Cullera. Sin embargo, en estas regiones emergencias apenas estaba reportando llamadas.</p>
           </div>
         </div>
-        <!-- Paso 9.5 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-9" data-step-index="4">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>En solo una hora se registran en Chiva más eventos de emergencias que en todas las horas anteriores del día: se realizan 13 rescates y otros ocho casos de grupos de personas incomunicadas. La situación en los municipios aledaños es muy similar, y en Godelleta se pide a las autoridades que lleven a cabo otros nueve rescates.</p>
           </div>
         </div>
-        <!-- Paso 9.6 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-9" data-step-index="5">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Se repiten las escenas que se estaban viviendo en la zona oeste, con personas mayores atrapadas en hogares inundándose, o coches que se han visto atrapados por las riadas, incluidos niños que viajaban con sus padres.</p>
           </div>
         </div>
-        <!-- Paso 9.7 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-9" data-step-index="6">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>17.50.</b>El embalse de Forata, que apenas estaba descargando agua, ha pasado a superar los niveles de alerta altos con un caudal de más de 100 m<sup>3</sup>/s.</p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 10 (Layout bloques) ===== -->
-        <!-- Paso 10.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-10" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>18.00.</b> El barranco del Poyo experimenta una elevada crecida. En solo media cuadruplica su caudal, alcanzando los 809 m<sup>3</sup>/s.</p>
             <iframe title="Gráfico Inferior 4"
-                     src="https://datawrapper.dwcdn.net/3Ifgt/1/" 
-                     frameborder="0" 
-                     scrolling="no"
-                     class="w-full h-[30vh] overflow-hidden mt-6"></iframe>
+                    src="https://datawrapper.dwcdn.net/3Ifgt/1/" 
+                    frameborder="0" 
+                    class="w-full h-[40vh] mt-6"></iframe>
           </div>
         </div>
-        <!-- Paso 10.2 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-10" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>18.43.</b> La Confederación Hidrográfica avisa a las autoridades de emergencias de que el caudal del Poyo se sitúa en los 1.683 m3/s, el doble que a las 18.00 y 11 veces por encima del umbral de 150 m3/s establecido en los protocolos de la Confederación.</p>
-          <iframe title="Gráfico Inferior 5"
-                     src="https://datawrapper.dwcdn.net/P0h3T/1/" 
-                     frameborder="0" 
-                     scrolling="no"
-                     class="w-full h-[30vh] overflow-hidden mt-6"></iframe>
+            <iframe title="Gráfico Inferior 5"
+                    src="https://datawrapper.dwcdn.net/P0h3T/1/" 
+                    frameborder="0" 
+                    class="w-full h-[40vh] mt-6"></iframe>
           </div>
         </div>
-        <!-- Paso 10.3 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-10" data-step-index="2">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>18.49.</b> El Ayuntamiento de Paiporta <a href="https://x.com/Ajunt_Paiporta/status/1851320374270832897">pide a sus vecinos</a> que eviten salir de sus casas debido al desbordamiento del barranco.</p>
           </div>
         </div>
-        <!-- Paso 10.4 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-10" data-step-index="3">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>El 112 comienza a recibir llamadas de este municipio, que se terminará convierto en uno de los más afectados por el temporal.</p>
           </div>
         </div>
-        <!-- Paso 10.5 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-10" data-step-index="4">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>18.55.</b> El SAIH <a href="https://saih.chj.es/docs/20241029-1104Informe-Episodio-C-version2.pdf">deja de tener registros</a> de la Rambla del Poyo debido a los daños causados en el sensor por el elevado caudal.</p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 11 (Layout normal) ===== -->
-        <!-- Paso 11.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-11" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p></p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 12 (Layout normal) ===== -->
-        <!-- Paso 12.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-12" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b style="background:#01f3b3; padding:1px 2px; border-radius:2px; color:black; box-shadow:0px 0px 5px 1px rgba(0,0,0,0.07); cursor:pointer;">20.11.</b> El Centro de Coordinación de Emergencias <b style="background:#01f3b3; padding:1px 2px; border-radius:2px; color:black; box-shadow:0px 0px 5px 1px rgba(0,0,0,0.07); cursor:pointer;">lanza la alerta por dana a los teléfonos móviles</b> de la provincia de Valencia a través del sistema Es-Alert. Según el mensaje, “<b style="background:#01f3b3; padding:1px 2px; border-radius:2px; color:black; box-shadow:0px 0px 5px 1px rgba(0,0,0,0.07); cursor:pointer;">se debe evitar cualquier tipo de desplazamiento</b> en la provincia de Valencia”.</p>
           </div>
         </div>
 
-
-        <!-- ===== BLOQUE 13 (Imagen) ===== -->
-        <!-- Paso 13.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="imagen-1" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>20.28.</b> <a href="https://www.youtube.com/watch?v=7AE7t9S2S_U">Llega Mazón a la reunión del CECOPI</a>, según explicó en sus declaraciones del 26 de febrero de 2025, como recoge La Vanguardia.</p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 14 (Layout normal) ===== -->
-        <!-- Paso 14.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-14" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Los registros de emergencias dibujan un mapa con el mayor número de eventos del día, rozando los 300 simultáneos, pero más dispersos entre municipios. Mientras que en la hora anterior un solo municipio, Riba-roja de Túria, acumulaba 87 eventos de emergencias (69 de ellos por la necesidad de rescates), entre las 21 y las 22 ningún municipio superó los 40 sucesos.</p>
           </div>
         </div>
-        <!-- Paso 14.2 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-14" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Durante esta franja, tres de cada cuatro acontecimientos registrados por el servicio de emergencias se correspondían con la necesidad de llevar a cabo algún rescate. Los municipios más castigados por el temporal a esta hora eran los de la comarca de L’Horta Sud, Ribera Alta y Ribera Baja, especialmente los más próximos a la Rambla del Poyo.</p>
           </div>
         </div>
-        <!-- Paso 14.3 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-14" data-step-index="2">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>En Torrent, por ejemplo, los servicios de emergencias reciben llamadas para pedir ayuda para dos personas agarradas a una farola.</p>
           </div>
         </div>
-        <!-- Paso 14.4 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-14" data-step-index="3">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>En Paiporta se repiten escenas similares, con gente atrapada en lo alto de remolques de camiones, techos de gasolineras, árboles y tractores. Cualquier lugar lo suficientemente alto valía para tratar de evitar las riadas.</p>
           </div>
         </div>
-        <!-- Paso 14.5 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-14" data-step-index="4">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>21.03.</b>Debido a la gran incidencia de la dana en este área y las terribles situaciones que se estaban viviendo, el Cecopi envía una segunda alerta a los móviles localizados en las comarcas de Ribera Alta, Ribera Baja, Hoya de Bunyol y L’Horta Sud.</p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 15 (Imagen) ===== -->
-        <!-- Paso 15.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="imagen-2" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p></p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 16 (layout normal) ===== -->
-        <!-- Paso 16.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-16" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p></p>
           </div>
         </div>
 
-        <!-- ===== BLOQUE 17 (layout normal) ===== -->
-        <!-- Paso 17.1 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-17" data-step-index="0">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>En las últimas horas del 29 de octubre comenzaron a disminuir los requerimientos de emergencias, aunque la cifra de eventos seguía siendo próxima a los 300.</p>
           </div>
         </div>
-        <!-- Paso 17.2 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-17" data-step-index="1">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>A estas alturas del día, los registros de emergencias muestran que el 86% de las llamadas al 112 tenían como fin pedir ayuda para llevar a cabo algún rescate.</p>
           </div>
         </div>
-        <!-- Paso 17.3 -->
-        <div class="step pt-[30vh] mb-[75vh] pl-8"
+        <div class="step mb-[30vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-17" data-step-index="2">
-          <div class="step-content">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>En Alfafar, antes de la media noche, todavía se registraron llamadas para rescatar a 30 personas que estaban atrapadas y con el agua hasta el pecho, 17 que se encontraban en el tejado de un local y otras que se refugiaron en un muro que estaba a punto de colapsar.</p>
           </div>
         </div>
-
-      </section> <!-- Fin de la sección de texto -->
-
-
-    </div> <!-- Fin de la Columna Izquierda -->
-
-
-    <!-- 
-      ====== COLUMNA DERECHA (GRÁFICO LATERAL) ====== 
-      Contiene los 6 gráficos laterales apilados.
-    -->
-    <aside id="side-graphic-container" 
-           class="order-2 sticky top-0 h-screen">
-      <div class="chart-container relative w-full h-full">
         
-        <iframe id="chart-1" src="https://flo.uri.sh/visualisation/25783007/embed" 
-                class="relative w-full h-full opacity-100 z-10 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-        
-        <iframe id="chart-2" src="https://flo.uri.sh/visualisation/25783664/embed" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-                
-        <iframe id="chart-3" src="https://datawrapper.dwcdn.net/4MT1z/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-        
-        <iframe id="chart-4" src="https://datawrapper.dwcdn.net/jnaSD/4/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-                
-        <iframe id="chart-5" src="https://datawrapper.dwcdn.net/LpQvr/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-        
-        <iframe id="chart-6" src="https://datawrapper.dwcdn.net/y4ls1/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
+        <div class="h-[70vh]"></div>
 
-        <iframe id="chart-7" src="https://datawrapper.dwcdn.net/806Hm/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
+      </section>
+    </article>
+  </main>
 
-        <iframe id="chart-8" src="https://datawrapper.dwcdn.net/6ET8x/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-
-        <iframe id="chart-9" src="https://datawrapper.dwcdn.net/hJHRS/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-
-        <iframe id="chart-10" src="https://datawrapper.dwcdn.net/cYNND/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-
-        <iframe id="chart-11" src="https://datawrapper.dwcdn.net/Pf3OS/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-
-        <iframe id="chart-12" src="https://datawrapper.dwcdn.net/nRDcF/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-
-
-        <a id="imagen-1" 
-           href="https://x.com/GVA112/status/1851341742986981682" target="_blank" rel="noopener noreferrer"
-           class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-4/5 opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden">
-          <img src="https://live.staticflickr.com/65535/54883828800_0221ff998c.jpg" 
-               alt="Fuente: Emergencias Comunidad Valenciana (Cuenta de X)" 
-               class="w-full h-full object-container">
-        </a>
-
-        <iframe id="chart-14" src="https://datawrapper.dwcdn.net/03jk9/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-
-
-        <a id="imagen-2" 
-           href="https://x.com/GVA112/status/1851354283263856823" target="_blank" rel="noopener noreferrer"
-           class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-4/5 opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden">
-          <img src="https://live.staticflickr.com/65535/54883757188_5731983221_c.jpg" 
-               alt="Fuente: Emergencias Comunidad Valenciana (Cuenta de X)" 
-               class="w-full h-full object-container">
-        </a>
-        
-        <iframe id="chart-16" src="https://datawrapper.dwcdn.net/oKdia/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-
-        <iframe id="chart-17" src="https://datawrapper.dwcdn.net/bPwzX/1/" 
-                class="absolute top-0 left-0 w-full h-full opacity-0 z-0 transition-opacity duration-500 ease-in-out overflow-hidden" 
-                frameborder="0" scrolling="no"></iframe>
-
-      </div>
-    </aside> <!-- Fin de la Columna Derecha -->
-
-  </article>
-</main>
-
-<!-- 
-  4. LÓGICA JAVASCRIPT
--->
-<script src = "script_principal.js"> </script>
-
-
+  <script src="script_principal.js"></script>
+</body>
+</html>
