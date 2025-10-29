@@ -198,7 +198,7 @@
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-1" data-step-index="0">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl"> 
-            <p><b>07.36.</b> Las zonas del interior de Valencia amanecen bajo el <a href="https://x.com/AEMET_CValencia/status/1851151018395848816">aviso rojo de la Aemet</a> por precipitaciones, ampliándose la <a href="https://x.com/AEMET_CValencia/status/1851019693139657048">alerta naranja</a> emitida la noche anterior.</p>
+            <p><b>07.36.</b> Las zonas del interior de València amanecen bajo el <a href="https://x.com/AEMET_CValencia/status/1851151018395848816">aviso rojo de la Aemet</a> por precipitaciones, ampliándose la <a href="https://x.com/AEMET_CValencia/status/1851019693139657048">alerta naranja</a> emitida la noche anterior.</p>
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
@@ -500,47 +500,113 @@
 
   <script src="script_principal.js"></script>
 
+
+
+
 <script>
 (function(){
+  var isIOS = /iP(hone|ad|od)/.test(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   var iframes = Array.prototype.slice.call(document.querySelectorAll('iframe.lazy-iframe[data-src]'));
   if (!iframes.length) return;
 
-  var maxConcurrent = 2; // limit concurrent loads
+  var MAX_CONCURRENT = (isIOS && isSafari) ? 1 : 2;   // iOS Safari: ultra conservador
+  var MAX_LOADED = (isIOS && isSafari) ? 2 : 4;       // mantén pocos iframes vivos a la vez
   var inFlight = 0;
   var queue = [];
+  var loadedSet = new Set();
+
+  function unloadFarIframes(){
+    try {
+      var vh = window.innerHeight;
+      iframes.forEach(function(el){
+        if (el.dataset.loaded === "true"){
+          var rect = el.getBoundingClientRect();
+          var farAbove = rect.bottom < -2 * vh;
+          var farBelow = rect.top > 3 * vh;
+          if (farAbove || farBelow){
+            // descarga
+            el.src = "about:blank";
+            el.dataset.loaded = "";
+            loadedSet.delete(el);
+          }
+        }
+      });
+    } catch (e) {}
+  }
+
+  function ensureLoadedBudget(){
+    if (loadedSet.size <= MAX_LOADED) return;
+    // Descarga los más lejanos dejando los más cercanos a viewport
+    var withDist = Array.from(loadedSet).map(function(el){
+      var rect = el.getBoundingClientRect();
+      var dist = Math.min(Math.abs(rect.top - window.innerHeight/2), Math.abs(rect.bottom - window.innerHeight/2));
+      return {el: el, dist: dist};
+    }).sort(function(a,b){ return a.dist - b.dist; });
+
+    // Mantén los primeros MAX_LOADED; descarga el resto
+    withDist.slice(MAX_LOADED).forEach(function(item){
+      item.el.src = "about:blank";
+      item.el.dataset.loaded = "";
+      loadedSet.delete(item.el);
+    });
+  }
 
   function loadIframe(el){
-    if (el.dataset.loaded === "true") return;
+    if (el.dataset.loaded === "true" || el.dataset.loaded === "loading") return;
     el.dataset.loaded = "loading";
     inFlight++;
     var realSrc = el.dataset.src;
-    // Transfer data attributes like data-width/height if any (no-op here)
-    el.addEventListener('load', function onLoad(){
+
+    function done(){
       el.dataset.loaded = "true";
-      el.removeEventListener('load', onLoad);
+      loadedSet.add(el);
       inFlight--;
+      ensureLoadedBudget();
       pump();
+    }
+
+    el.addEventListener('load', function onLoad(){
+      el.removeEventListener('load', onLoad);
+      done();
     });
-    // Some embeds (Datawrapper/Flourish) need pointer events enabled
-    el.style.pointerEvents = 'auto';
-    // Set src to trigger load
-    el.src = realSrc;
+
+    // iOS Safari a veces se queja si disparas cargas en ráfaga
+    var delay = (isIOS && isSafari) ? 120 : 0;
+    setTimeout(function(){
+      // evita navegaciones redundantes
+      if (el.src !== realSrc) el.src = realSrc;
+    }, delay);
   }
 
   function pump(){
-    while (inFlight < maxConcurrent && queue.length){
+    while (inFlight < MAX_CONCURRENT && queue.length){
       var next = queue.shift();
       loadIframe(next);
     }
   }
 
   function enqueue(el){
-    if (el.dataset.loaded) return;
-    queue.push(el);
+    if (el.dataset.loaded === "true" || el.dataset.loaded === "loading") return;
+    // evita duplicados en la cola
+    if (queue.indexOf(el) === -1) queue.push(el);
     pump();
   }
 
-  // As a progressive enhancement, use IntersectionObserver
+  var scrollTimer;
+  function onScrollThrottled(){
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function(){
+      unloadFarIframes();
+      iframes.forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight + 600 && rect.bottom > -600){
+          enqueue(el);
+        }
+      });
+    }, (isIOS && isSafari) ? 150 : 80);
+  }
+
   if ('IntersectionObserver' in window){
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(entry){
@@ -550,33 +616,28 @@
         }
       });
     }, { root: null, rootMargin: '600px 0px', threshold: 0.01 });
-
     iframes.forEach(function(el){ io.observe(el); });
   } else {
-    // Fallback: load first two immediately, then on scroll throttle
-    iframes.slice(0, 2).forEach(enqueue);
-    var timer;
-    function onScroll(){
-      clearTimeout(timer);
-      timer = setTimeout(function(){
-        iframes.forEach(function(el){
-          var rect = el.getBoundingClientRect();
-          if (rect.top < window.innerHeight + 600 && rect.bottom > -600){
-            enqueue(el);
-          }
-        });
-      }, 100);
-    }
-    window.addEventListener('scroll', onScroll, {passive:true});
-    window.addEventListener('resize', onScroll);
-    onScroll();
+    window.addEventListener('scroll', onScrollThrottled, {passive:true});
+    window.addEventListener('resize', onScrollThrottled);
+    onScrollThrottled();
   }
 
-  // Safety: if user is idle at top, start by enqueueing the very first iframe after a short delay
+  // Pausa cargas cuando la pestaña no está visible
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden){
+      // no iniciamos nuevas cargas; el pump solo se llama al volver
+    } else {
+      pump();
+      onScrollThrottled();
+    }
+  });
+
+  // Asegura que al menos el primero arranque
   setTimeout(function(){
     var first = iframes[0];
     if (first && !first.dataset.loaded) enqueue(first);
-  }, 300);
+  }, (isIOS && isSafari) ? 200 : 100);
 })();
 </script>
 
