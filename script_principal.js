@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
       Object.values(charts).forEach(f => {
         if (f.tagName !== 'IFRAME') return;
         
-        // Solo actualizar la altura del iframe si es el iframe PRINCIPAL actualmente activo
         if (f.contentWindow === evt.source && f.id === currentChartId) {
           const container = document.querySelector(".chart-container");
           if (container) {
@@ -42,9 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       });
-      
-      // El iframe inferior (dentro de step-content) también puede enviar mensajes
-      // pero NO debe cambiar la altura del chart-container.
     }
   });
 
@@ -60,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         container.style.height = newHeight;
     }
-    // CORRECCIÓN: Comprobar que el iframe esté cargado antes de enviar mensajes (Safari/iOS fix)
+    // CORRECCIÓN: Comprobar que el iframe fijo esté cargado antes de enviar mensajes
     else if (frame.tagName === 'IFRAME' && frame.src.includes('datawrapper') && frame.dataset.loaded === "true") {
          try {
             if (frame.contentWindow) {
@@ -95,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector(".chart-container");
     if (!frame || !container) return;
 
-    // CORRECCIÓN: Comprobar que el iframe esté cargado antes de enviar mensajes (Safari/iOS fix)
+    // CORRECCIÓN: Comprobar que el iframe fijo esté cargado antes de enviar mensajes
     if (frame.tagName === 'IFRAME' && frame.src.includes('datawrapper') && frame.dataset.loaded === "true") {
       try {
         if (frame.contentWindow) {
@@ -131,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       const frame = charts[currentChartId];
-      // CORRECCIÓN: Comprobar que el iframe esté cargado antes de enviar mensajes (Safari/iOS fix)
+      // CORRECCIÓN: Comprobar que el iframe fijo esté cargado antes de enviar mensajes
       if (frame && stepIndex != null && frame.tagName === 'IFRAME' && frame.src.includes('datawrapper') && frame.dataset.loaded === "true") {
         try {
             if (frame.contentWindow) {
