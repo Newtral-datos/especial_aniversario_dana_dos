@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const charts = {
       'chart-1': document.getElementById('chart-1'),
       'chart-2': document.getElementById('chart-2'),
+      'chart-3': document.getElementById('chart-3'),
       'chart-4': document.getElementById('chart-4'),
       'chart-5': document.getElementById('chart-5'),
       'chart-6': document.getElementById('chart-6'),
