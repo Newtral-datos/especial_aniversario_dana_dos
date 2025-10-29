@@ -6,87 +6,74 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (isIPhone) {
     
-    // Mapeo de IDs de gráficos a sus URLs de imagen estática y URL de enlace específicas para iPhone.
-    // **imageUrl**: Es la URL de la imagen que se mostrará.
-    // **linkUrl**: Es la URL de destino al hacer clic en la imagen (puedes usar la URL del iframe original si quieres que se abra el interactivo en una nueva pestaña).
+    // Mapeo de IDs de gráficos a sus URLs de imagen estática (sin hipervínculo)
     const iPhoneChartReplacements = {
       'chart-3': { 
         imageUrl: 'https://i.imgur.com/MmnIC9V.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/4MT1z/1/' // Ejemplo: Enlace al gráfico Datawrapper original
       },
       'chart-4': { 
         imageUrl: 'https://i.imgur.com/Mh4w7Ls.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/jnaSD/4/' // Puedes cambiarlo por la URL de la fuente (ej. un artículo)
       },
       'chart-5': { 
         imageUrl: 'https://i.imgur.com/MWF95Lu.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/LpQvr/1/' 
       },
       'chart-6': { 
         imageUrl: 'https://i.imgur.com/EPXxiJW.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/y4ls1/1/' 
       },
       'chart-7': { 
         imageUrl: 'https://i.imgur.com/4K22V06.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/806Hm/1/' 
       },
       'chart-8': { 
         imageUrl: 'https://i.imgur.com/qqFVopP.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/6ET8x/1/' 
       },
       'chart-9': { 
         imageUrl: 'https://i.imgur.com/wPk6guY.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/hJHRS/1/' 
       },
       'chart-10': { 
         imageUrl: 'https://i.imgur.com/VCjzjtV.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/cYNND/1/' 
       },
       'chart-11': { 
         imageUrl: 'https://i.imgur.com/dQkF8RU.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/Pf3OS/1/' 
       },
       'chart-12': { 
         imageUrl: 'https://i.imgur.com/WvcVn0h.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/nRDcF/1/' 
       },
       'chart-14': { 
         imageUrl: 'https://i.imgur.com/toq4RFC.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/03jk9/1/' 
       },
       'chart-16': { 
         imageUrl: 'https://i.imgur.com/Q7kmzLn.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/oKdia/1/' 
       },
       'chart-17': { 
         imageUrl: 'https://i.imgur.com/OQcAqpM.png', 
-        linkUrl: 'https://datawrapper.dwcdn.net/bPwzX/1/' 
       },
     };
 
-    // Iteramos sobre las entradas del objeto de mapeo
+    // Iteramos sobre las entradas para realizar la sustitución en el DOM
     Object.entries(iPhoneChartReplacements).forEach(([chartId, data]) => {
       const originalChart = document.getElementById(chartId);
 
-      // Verificamos que el elemento exista y sea un iframe
       if (originalChart && originalChart.tagName === 'IFRAME') {
         
         // 1. Creamos el nuevo <a>
         const imageLink = document.createElement('a');
-        imageLink.id = originalChart.id; // Mantenemos el ID original
-        imageLink.href = data.linkUrl;   // Usamos la URL de enlace (al hacer clic)
-        imageLink.target = '_blank';
+        imageLink.id = originalChart.id; 
+        
+        // ** CLAVE: Neutralizamos el hipervínculo **
+        imageLink.href = 'javascript:void(0)';   
+        
+        imageLink.target = '_self'; 
         imageLink.rel = 'noopener noreferrer';
         
-        // 2. Le asignamos 'data-image="1"' para que herede los estilos CSS
+        // 2. Le asignamos 'data-image="1"' para los estilos CSS
         imageLink.dataset.image = '1';
         
-        // 3. Copiamos las clases de transición y opacidad del iframe
+        // 3. Copiamos las clases del iframe original
         imageLink.className = originalChart.className;
 
         // 4. Creamos la <img> interna
         const image = document.createElement('img');
-        image.src = data.imageUrl; // Usamos la URL de la imagen estática (lo que se ve)
+        image.src = data.imageUrl; // URL de imagen estática proporcionada
         image.alt = `Gráfico estático para iPhone de ${chartId}`;
         
         // 5. Las anidamos
