@@ -85,6 +85,7 @@
     }
 
     /* CLAVE 2: Reactivar manejo de clics SÓLO en elementos interactivos dentro del recuadro de texto */
+    /* El recuadro blanco en sí sigue dejando pasar clics al iframe de fondo, excepto en estos elementos. */
     .step-content a, 
     .step-content iframe,
     .step-content b[style], 
@@ -93,13 +94,17 @@
     }
     
     /* CLAVE 3: Asegurar que el contenedor principal del scroll deja pasar clics */
+    /* Esta es la capa que envuelve todos los 'steps'. Al ponerle pointer-events: none, */
+    /* permitimos que el click llegue al <aside> fijo que sí tiene pointer-events: auto en el iframe activo. */
     main {
         pointer-events: none; 
     }
     
     /* CLAVE 4: Reactivar pointer-events SOLO en los elementos que deben ser clicables dentro del MAIN */
+    /* Esto incluye el recuadro de texto (mediante sus elementos interactivos internos) y los iframes inferiores. */
     .step-content {
-        /* Se mantiene el pointer-events: none, que es reactivado por los elementos internos */
+        /* Dejamos el recuadro con pointer-events: none, pero reactivamos en el contenido */
+        /* interactivo dentro (a, iframe, b[style], etc.) */
     }
 
   </style>
@@ -109,55 +114,53 @@
   <aside class="fixed top-0 left-0 w-full h-screen z-10 grid place-items-center md:p-4 pointer-events-none">
     <div class="chart-container">
       
-      <iframe loading="lazy" id="chart-1" src="about:blank" data-src="https://flo.uri.sh/visualisation/25783007/embed"
+      <iframe id="chart-1" src="https://flo.uri.sh/visualisation/25783007/embed"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-100 z-10 pointer-events-auto transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-100 z-10 pointer-events-auto transition-opacity duration-500 ease-in-out"></iframe>
       
-      <iframe loading="lazy" id="chart-2" src="about:blank" data-src="https://flo.uri.sh/visualisation/25783664/embed"
+      <iframe id="chart-2" src="https://flo.uri.sh/visualisation/25783664/embed"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
-      
-      <iframe loading="lazy" id="chart-4" src="about:blank" data-src="https://datawrapper.dwcdn.net/jnaSD/4/"
-              frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
               
-      <iframe loading="lazy" id="chart-5" src="about:blank" data-src="https://datawrapper.dwcdn.net/LpQvr/1/"
+      <iframe id="chart-3" src="https://datawrapper.dwcdn.net/4MT1z/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
       
-      <iframe loading="lazy" id="chart-6" src="about:blank" data-src="https://datawrapper.dwcdn.net/y4ls1/1/"
+      <iframe id="chart-4" src="https://datawrapper.dwcdn.net/jnaSD/4/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
-
-      <iframe loading="lazy" id="chart-7" src="about:blank" data-src="https://datawrapper.dwcdn.net/806Hm/1/"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              
+      <iframe id="chart-5" src="https://datawrapper.dwcdn.net/LpQvr/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
-
-      <iframe loading="lazy" id="chart-8" src="about:blank" data-src="https://datawrapper.dwcdn.net/6ET8x/1/"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+      
+      <iframe id="chart-6" src="https://datawrapper.dwcdn.net/y4ls1/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-      <iframe loading="lazy" id="chart-9" src="about:blank" data-src="https://datawrapper.dwcdn.net/hJHRS/1/"
+      <iframe id="chart-7" src="https://datawrapper.dwcdn.net/806Hm/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-      <iframe loading="lazy" id="chart-10" src="about:blank" data-src="https://datawrapper.dwcdn.net/cYNND/1/"
+      <iframe id="chart-8" src="https://datawrapper.dwcdn.net/6ET8x/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-      <iframe loading="lazy" id="chart-11" src="about:blank" data-src="https://datawrapper.dwcdn.net/Pf3OS/1/"
+      <iframe id="chart-9" src="https://datawrapper.dwcdn.net/hJHRS/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-      <iframe loading="lazy" id="chart-12" src="about:blank" data-src="https://datawrapper.dwcdn.net/nRDcF/1/"
+      <iframe id="chart-10" src="https://datawrapper.dwcdn.net/cYNND/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-      <a id="chart-3" target="_blank" rel="noopener noreferrer"
-         data-image="c3"
-         class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out">
-        <img src="https://i.imgur.com/MmnIC9V.png">
-      </a>
+      <iframe id="chart-11" src="https://datawrapper.dwcdn.net/Pf3OS/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+
+      <iframe id="chart-12" src="https://datawrapper.dwcdn.net/nRDcF/1/"
+              frameborder="0" data-external="1"
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
       <a id="imagen-1" href="https://x.com/GVA112/status/1851341742986981682" target="_blank" rel="noopener noreferrer"
          data-image="1"
@@ -166,9 +169,9 @@
              alt="Fuente: Emergencias Comunidad Valenciana (Cuenta de X)">
       </a>
 
-      <iframe loading="lazy" id="chart-14" src="about:blank" data-src="https://datawrapper.dwcdn.net/03jk9/1/"
+      <iframe id="chart-14" src="https://datawrapper.dwcdn.net/03jk9/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
       <a id="imagen-2" href="https://x.com/GVA112/status/1851354283263856823" target="_blank" rel="noopener noreferrer"
          data-image="1"
@@ -177,13 +180,13 @@
              alt="Fuente: Emergencias Comunidad Valenciana (Cuenta de X)">
       </a>
       
-      <iframe loading="lazy" id="chart-16" src="about:blank" data-src="https://datawrapper.dwcdn.net/oKdia/1/"
+      <iframe id="chart-16" src="https://datawrapper.dwcdn.net/oKdia/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
 
-      <iframe loading="lazy" id="chart-17" src="about:blank" data-src="https://datawrapper.dwcdn.net/bPwzX/1/"
+      <iframe id="chart-17" src="https://datawrapper.dwcdn.net/bPwzX/1/"
               frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              class="opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
               
     </div>
   </aside>
@@ -195,7 +198,7 @@
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-1" data-step-index="0">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl"> 
-            <p><b>07.36.</b> Las zonas del interior de València amanecen bajo el <a href="https://x.com/AEMET_CValencia/status/1851151018395848816">aviso rojo de la Aemet</a> por precipitaciones, ampliándose la <a href="https://x.com/AEMET_CValencia/status/1851019693139657048">alerta naranja</a> emitida la noche anterior.</p>
+            <p><b>07.36.</b> Las zonas del interior de Valencia amanecen bajo el <a href="https://x.com/AEMET_CValencia/status/1851151018395848816">aviso rojo de la Aemet</a> por precipitaciones, ampliándose la <a href="https://x.com/AEMET_CValencia/status/1851019693139657048">alerta naranja</a> emitida la noche anterior.</p>
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
@@ -217,12 +220,12 @@
             <p><b>10.00.</b> El Centro de Coordinación de Emergencias <a href="https://x.com/GVA112/status/1851190139462013044">amplía la alerta roja</a> a todo el litoral y la zona del interior norte, decretando también la situación de emergencia en la comarca de la Ribera Alta.</p>
           </div>
         </div>
-        
+
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-3" data-step-index="0">
-          <div class="step-content relative bg-white/90 shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>11.00.</b> El agua empieza a correr por la Rambla del Poyo. En solo media hora el barranco pasó de no contener ningún caudal a superar los 200 m3/s. Se trata de una cifra por encima de los 150 m3/s, el umbral de alerta alto establecido por la <a href="https://saih.chj.es/aforos/13873">Confederación Hidrográfica del Júcar</a> (CHJ). Según sus protocolos, una vez superada esta barrera se debe informar a las autoridades de emergencias.</p>
-            <iframe loading="lazy" title="Gráfico Inferior 1"
+            <iframe title="Gráfico Inferior 1"
                     src="https://datawrapper.dwcdn.net/WVKFU/1/" 
                     frameborder="0" 
                     class="w-full h-[40vh] mt-6"></iframe>
@@ -255,9 +258,9 @@
 
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-4" data-step-index="0">
-          <div class="step-content relative bg-white/90 shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>12.09.</b> La Confederación Hidrográfica del Júcar <a href="https://x.com/CHJucar/status/1853529826692419854/photo/2">avisa a las autoridades</a> de protección civil que el Barranco del Poyo ha alcanzado un caudal de 264 m3/s, produciéndose una rápida crecida, como muestra el correo al que tuvieron acceso <i><a href = "https://elpais.com/clima-y-medio-ambiente/2024-11-07/asi-fueron-las-horas-clave-antes-de-que-la-catastrofica-riada-del-barranco-del-poyo-arrasara-paiporta.html">El País</i></a> y <i><a href="https://www.elmundo.es/comunidad-valenciana/2024/11/04/67291105e4d4d809668b4581.html">El Mundo</a></i>.</p>
-            <iframe loading="lazy" title="Gráfico Inferior 1"
+            <iframe title="Gráfico Inferior 1"
                     src="https://datawrapper.dwcdn.net/YPSVz/1/" 
                     frameborder="0" 
                     class="w-full h-[40vh] mt-6"></iframe>
@@ -278,9 +281,9 @@
 
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-5" data-step-index="0">
-          <div class="step-content relative bg-white/90 shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>13.20.</b> La Confederación Hidrográfica avisa al Cecopi de que el caudal en el barranco del Poyo está disminuyendo, situándose por debajo del umbral de alerta alto.</p>
-            <iframe loading="lazy" title="Gráfico Inferior 2"
+            <iframe title="Gráfico Inferior 2"
                     src="https://datawrapper.dwcdn.net/teBtF/1/" 
                     frameborder="0" 
                     class="w-full h-[40vh] mt-6"></iframe>
@@ -327,9 +330,9 @@
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-8" data-step-index="1">
-          <div class="step-content relative bg-white/90 shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>El caudal en la Rambla del Poyo empieza a repuntar, aunque se sigue manteniendo por debajo del umbral de alerta.</p>
-            <iframe loading="lazy" title="Gráfico Inferior 3"
+            <iframe title="Gráfico Inferior 3"
                     src="https://datawrapper.dwcdn.net/Y7E9L/1/" 
                     frameborder="0" 
                     class="w-full h-[40vh] mt-6"></iframe>
@@ -338,9 +341,9 @@
 
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-9" data-step-index="0">
-          <div class="step-content relative bg-white/90 shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>17.00.</b> <span href="https://x.com/GVA112/status/1851289218934587493" style="background:#01f3b3; padding:1px 2px; border-radius:2px; color:black; box-shadow:0px 0px 5px 1px rgba(0,0,0,0.07); cursor:pointer;">Comienza la reunión del Cecopi.</span> En ella la <a href="https://x.com/CHJucar/status/1853529826692419854/photo/2">CJH informa sobre el elevado incremento en el caudal</a> de los ríos Júcar y Magro, así como de la declaración del escenario 2 en la presa de Forata. (No se informa sobre la situación del barranco del Poyo, que vuelve a superar el umbral de 150m3/s a las 17.25 horas).</p>
-            <iframe loading="lazy" title="Gráfico Inferior 4"
+            <iframe title="Gráfico Inferior 4"
                     src="https://datawrapper.dwcdn.net/6JqJD/1/" 
                     frameborder="0" 
                     class="w-full h-[40vh] mt-6"></iframe>
@@ -385,9 +388,9 @@
 
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-10" data-step-index="0">
-          <div class="step-content relative bg-white/90 shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
-            <p><b>18.00.</b> El barranco del Poyo experimenta una elevada crecida. En solo media hora cuadruplica su caudal, alcanzando los 809 m<sup>3</sup>/s.</p>
-            <iframe loading="lazy" title="Gráfico Inferior 4"
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+            <p><b>18.00.</b> El barranco del Poyo experimenta una elevada crecida. En solo media cuadruplica su caudal, alcanzando los 809 m<sup>3</sup>/s.</p>
+            <iframe title="Gráfico Inferior 4"
                     src="https://datawrapper.dwcdn.net/3Ifgt/1/" 
                     frameborder="0" 
                     class="w-full h-[40vh] mt-6"></iframe>
@@ -395,9 +398,9 @@
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-10" data-step-index="1">
-          <div class="step-content relative bg-white/90 shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>18.43.</b> La Confederación Hidrográfica avisa a las autoridades de emergencias de que el caudal del Poyo se sitúa en los 1.683 m3/s, el doble que a las 18.00 y 11 veces por encima del umbral de 150 m3/s establecido en los protocolos de la Confederación.</p>
-            <iframe loading="lazy" title="Gráfico Inferior 5"
+            <iframe title="Gráfico Inferior 5"
                     src="https://datawrapper.dwcdn.net/P0h3T/1/" 
                     frameborder="0" 
                     class="w-full h-[40vh] mt-6"></iframe>
@@ -415,11 +418,17 @@
             <p>El 112 comienza a recibir llamadas de este municipio, que se terminará convierto en uno de los más afectados por el temporal.</p>
           </div>
         </div>
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
+             data-chart-id="chart-10" data-step-index="4">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+            <p><b>18.55.</b> El SAIH <a href="https://saih.chj.es/docs/20241029-1104Informe-Episodio-C-version2.pdf">deja de tener registros</a> de la Rambla del Poyo debido a los daños causados en el sensor por el elevado caudal.</p>
+          </div>
+        </div>
 
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-11" data-step-index="0">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
-            <p><b>18.55.</b> El SAIH <a href="https://saih.chj.es/docs/20241029-1104Informe-Episodio-C-version2.pdf">deja de tener registros</a> de la Rambla del Poyo debido a los daños causados en el sensor por el elevado caudal.</p>
+            <p></p>
           </div>
         </div>
 
@@ -461,21 +470,33 @@
             <p>En Paiporta se repiten escenas similares, con gente atrapada en lo alto de remolques de camiones, techos de gasolineras, árboles y tractores. Cualquier lugar lo suficientemente alto valía para tratar de evitar las riadas.</p>
           </div>
         </div>
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
+             data-chart-id="chart-14" data-step-index="4">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+            <p><b>21.03.</b>Debido a la gran incidencia de la dana en este área y las terribles situaciones que se estaban viviendo, el Cecopi envía una segunda alerta a los móviles localizados en las comarcas de Ribera Alta, Ribera Baja, Hoya de Bunyol y L’Horta Sud.</p>
+          </div>
+        </div>
 
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="imagen-2" data-step-index="0">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
-            <p><b>21.03.</b> Debido a la gran incidencia de la dana en este área y las terribles situaciones que se estaban viviendo, el Cecopi envía una segunda alerta a los móviles localizados en las comarcas de Ribera Alta, Ribera Baja, Hoya de Bunyol y L’Horta Sud.</p>
+            <p></p>
           </div>
         </div>
 
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-16" data-step-index="0">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
-            <p>En las últimas horas del 29 de octubre comenzaron a disminuir los requerimientos de emergencias, aunque la cifra de eventos seguía siendo próxima a los 300.</p>
+            <p></p>
           </div>
         </div>
 
+        <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
+             data-chart-id="chart-17" data-step-index="0">
+          <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
+            <p>En las últimas horas del 29 de octubre comenzaron a disminuir los requerimientos de emergencias, aunque la cifra de eventos seguía siendo próxima a los 300.</p>
+          </div>
+        </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-17" data-step-index="1">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
@@ -496,7 +517,5 @@
   </main>
 
   <script src="script_principal.js"></script>
-  <script src="script_lazyload.js"></script>
-
 </body>
 </html>
