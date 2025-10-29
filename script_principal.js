@@ -5,50 +5,107 @@ document.addEventListener('DOMContentLoaded', () => {
   const isIPhone = /iPhone/i.test(navigator.userAgent);
   
   if (isIPhone) {
-    const urlIPhoneChart3 = 'https://i.imgur.com/MmnIC9V.png';
-    const originalChart3 = document.getElementById('chart-3');
+    
+    // Mapeo de IDs de gráficos a sus URLs de imagen estática y URL de enlace específicas para iPhone.
+    // **imageUrl**: Es la URL de la imagen que se mostrará.
+    // **linkUrl**: Es la URL de destino al hacer clic en la imagen (puedes usar la URL del iframe original si quieres que se abra el interactivo en una nueva pestaña).
+    const iPhoneChartReplacements = {
+      'chart-3': { 
+        imageUrl: 'https://i.imgur.com/MmnIC9V.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/4MT1z/1/' // Ejemplo: Enlace al gráfico Datawrapper original
+      },
+      'chart-4': { 
+        imageUrl: 'https://i.imgur.com/Mh4w7Ls.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/jnaSD/4/' // Puedes cambiarlo por la URL de la fuente (ej. un artículo)
+      },
+      'chart-5': { 
+        imageUrl: 'https://i.imgur.com/MWF95Lu.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/LpQvr/1/' 
+      },
+      'chart-6': { 
+        imageUrl: 'https://i.imgur.com/EPXxiJW.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/y4ls1/1/' 
+      },
+      'chart-7': { 
+        imageUrl: 'https://i.imgur.com/4K22V06.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/806Hm/1/' 
+      },
+      'chart-8': { 
+        imageUrl: 'https://i.imgur.com/qqFVopP.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/6ET8x/1/' 
+      },
+      'chart-9': { 
+        imageUrl: 'https://i.imgur.com/wPk6guY.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/hJHRS/1/' 
+      },
+      'chart-10': { 
+        imageUrl: 'https://i.imgur.com/VCjzjtV.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/cYNND/1/' 
+      },
+      'chart-11': { 
+        imageUrl: 'https://i.imgur.com/dQkF8RU.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/Pf3OS/1/' 
+      },
+      'chart-12': { 
+        imageUrl: 'https://i.imgur.com/WvcVn0h.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/nRDcF/1/' 
+      },
+      'chart-14': { 
+        imageUrl: 'https://i.imgur.com/toq4RFC.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/03jk9/1/' 
+      },
+      'chart-16': { 
+        imageUrl: 'https://i.imgur.com/Q7kmzLn.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/oKdia/1/' 
+      },
+      'chart-17': { 
+        imageUrl: 'https://i.imgur.com/OQcAqpM.png', 
+        linkUrl: 'https://datawrapper.dwcdn.net/bPwzX/1/' 
+      },
+    };
 
-    // Comprobamos que 'chart-3' existe y es un iframe (para no romper nada)
-    if (originalChart3 && originalChart3.tagName === 'IFRAME') {
-      
-      // 1. Creamos el nuevo elemento <a>
-      const imageLink = document.createElement('a');
-      imageLink.id = originalChart3.id; // Mantenemos el ID 'chart-3'
-      imageLink.href = '#'; // Puedes poner un enlace si quieres, o dejar '#'
-      imageLink.target = '_blank';
-      imageLink.rel = 'noopener noreferrer';
-      
-      // 2. Le asignamos 'data-image="1"' para que coja los estilos CSS de las otras imágenes
-      imageLink.dataset.image = '1';
-      
-      // 3. Copiamos todas las clases del iframe original (opacity, z-index, transition...)
-      imageLink.className = originalChart3.className;
+    // Iteramos sobre las entradas del objeto de mapeo
+    Object.entries(iPhoneChartReplacements).forEach(([chartId, data]) => {
+      const originalChart = document.getElementById(chartId);
 
-      // 4. Creamos la <img> de dentro
-      const image = document.createElement('img');
-      image.src = urlIPhoneChart3;
-      image.alt = 'Gráfico estático para iPhone';
-      
-      // 5. Las conectamos
-      imageLink.appendChild(image);
-      
-      // 6. Reemplazamos el <iframe> por el <a> en el DOM
-      originalChart3.parentNode.replaceChild(imageLink, originalChart3);
-    }
+      // Verificamos que el elemento exista y sea un iframe
+      if (originalChart && originalChart.tagName === 'IFRAME') {
+        
+        // 1. Creamos el nuevo <a>
+        const imageLink = document.createElement('a');
+        imageLink.id = originalChart.id; // Mantenemos el ID original
+        imageLink.href = data.linkUrl;   // Usamos la URL de enlace (al hacer clic)
+        imageLink.target = '_blank';
+        imageLink.rel = 'noopener noreferrer';
+        
+        // 2. Le asignamos 'data-image="1"' para que herede los estilos CSS
+        imageLink.dataset.image = '1';
+        
+        // 3. Copiamos las clases de transición y opacidad del iframe
+        imageLink.className = originalChart.className;
+
+        // 4. Creamos la <img> interna
+        const image = document.createElement('img');
+        image.src = data.imageUrl; // Usamos la URL de la imagen estática (lo que se ve)
+        image.alt = `Gráfico estático para iPhone de ${chartId}`;
+        
+        // 5. Las anidamos
+        imageLink.appendChild(image);
+        
+        // 6. Reemplazamos el <iframe> por el <a> en el DOM
+        originalChart.parentNode.replaceChild(imageLink, originalChart);
+      }
+    });
   }
   // --- FIN DE LA MODIFICACIÓN ---
 
-
-  // El resto de tu script original sigue aquí, sin cambios.
-  // Ahora, cuando se defina el objeto 'charts', document.getElementById('chart-3')
-  // encontrará el <iframe> (en PC/Android) o el <a> (en iPhone).
 
   const steps = document.querySelectorAll('.step');
   
   const charts = {
     'chart-1': document.getElementById('chart-1'),
     'chart-2': document.getElementById('chart-2'),
-    'chart-3': document.getElementById('chart-3'), // ¡Este elemento ya es el correcto!
+    'chart-3': document.getElementById('chart-3'),
     'chart-4': document.getElementById('chart-4'),
     'chart-5': document.getElementById('chart-5'),
     'chart-6': document.getElementById('chart-6'),
@@ -92,8 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector(".chart-container");
     if (!frame || !container) return;
 
-    // Tu lógica original ya maneja esto perfectamente:
-    // Si es un <a> (imagen) o no es datawrapper, usa la altura completa.
     if (frame.tagName === 'A' || !frame.src.includes('datawrapper')) {
         let newHeight = '100vh';
         if (window.innerWidth >= 768) { 
@@ -101,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         container.style.height = newHeight;
     }
-    // Si es un iframe de datawrapper, pide la altura.
     else if (frame.tagName === 'IFRAME' && frame.src.includes('datawrapper')) {
          try {
            if (frame.contentWindow) {
@@ -136,7 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector(".chart-container");
     if (!frame || !container) return;
 
-    // Tu lógica original también maneja esto
     if (frame.tagName === 'IFRAME' && frame.src.includes('datawrapper')) {
       try {
         if (frame.contentWindow) {
@@ -172,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       const frame = charts[currentChartId];
-      // Y aquí, si el frame es un <a> (iPhone) no intentará enviar el postMessage. Perfecto.
       if (frame && stepIndex != null && frame.tagName === 'IFRAME' && frame.src.includes('datawrapper')) {
         try {
             if (frame.contentWindow) {
