@@ -121,10 +121,6 @@
       <iframe loading="lazy" id="chart-2" src="about:blank" data-src="https://flo.uri.sh/visualisation/25783664/embed"
               frameborder="0" data-external="1"
               class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
-              
-      <iframe loading="lazy" id="chart-3" src="about:blank" data-src="https://datawrapper.dwcdn.net/4MT1z/1/"
-              frameborder="0" data-external="1"
-              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
       
       <iframe loading="lazy" id="chart-4" src="about:blank" data-src="https://datawrapper.dwcdn.net/jnaSD/4/"
               frameborder="0" data-external="1"
@@ -222,7 +218,7 @@
         </div>
 
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-3" data-step-index="0">
+             data-chart-id="chart-4" data-step-index="0">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>11.00.</b> El agua empieza a correr por la Rambla del Poyo. En solo media hora el barranco pasó de no contener ningún caudal a superar los 200 m3/s. Se trata de una cifra por encima de los 150 m3/s, el umbral de alerta alto establecido por la <a href="https://saih.chj.es/aforos/13873">Confederación Hidrográfica del Júcar</a> (CHJ). Según sus protocolos, una vez superada esta barrera se debe informar a las autoridades de emergencias.</p>
             <iframe loading="lazy" title="Gráfico Inferior 1"
@@ -232,25 +228,25 @@
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-3" data-step-index="1">
+             data-chart-id="chart-4" data-step-index="1">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Esta cifra es superior al caudal correspondiente con los periodos de retorno para 10 años (179 m3/s). Es decir, un umbral superior a esta cifra es algo que sólo se ve una vez cada 10 años.</p>
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-3" data-step-index="2">
+             data-chart-id="chart-4" data-step-index="2">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>11.45.</b> El Cecopi emite un <a href="https://x.com/GVA112/status/1851223906029355347">aviso especial de alerta hidrológica</a> para los municipios de la cuenca del río Magro por posibles crecidas. Además, informa de <a href="https://x.com/GVA112/status/1851175465932689772">carreteras cortadas</a> y <a href="https://x.com/GVA112/status/1851214852687110589">personas atrapadas</a>.</p>
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-3" data-step-index="3">
+             data-chart-id="chart-4" data-step-index="3">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Aunque emergencias comienza a recibir alertas por todo el litoral la mayoría de los eventos se concentran en Requena, situado en la zona interior de Valencia, como muestra el registro de incidentes elaborado a partir de las llamadas al 112.</p>
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-3" data-step-index="4">
+             data-chart-id="chart-4" data-step-index="4">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>En el municipio las llamadas empiezan a recoger avisos por el desbordamiento del barranco y numerosos hogares inundados, teniéndose que rescatar únicamente a una persona atrapada en su vehículo.</p>
           </div>
@@ -500,113 +496,47 @@
 
   <script src="script_principal.js"></script>
 
-
-
-
 <script>
 (function(){
-  var isIOS = /iP(hone|ad|od)/.test(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-  var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   var iframes = Array.prototype.slice.call(document.querySelectorAll('iframe.lazy-iframe[data-src]'));
   if (!iframes.length) return;
 
-  var MAX_CONCURRENT = (isIOS && isSafari) ? 1 : 2;   // iOS Safari: ultra conservador
-  var MAX_LOADED = (isIOS && isSafari) ? 2 : 4;       // mantén pocos iframes vivos a la vez
+  var maxConcurrent = 2; // limit concurrent loads
   var inFlight = 0;
   var queue = [];
-  var loadedSet = new Set();
-
-  function unloadFarIframes(){
-    try {
-      var vh = window.innerHeight;
-      iframes.forEach(function(el){
-        if (el.dataset.loaded === "true"){
-          var rect = el.getBoundingClientRect();
-          var farAbove = rect.bottom < -2 * vh;
-          var farBelow = rect.top > 3 * vh;
-          if (farAbove || farBelow){
-            // descarga
-            el.src = "about:blank";
-            el.dataset.loaded = "";
-            loadedSet.delete(el);
-          }
-        }
-      });
-    } catch (e) {}
-  }
-
-  function ensureLoadedBudget(){
-    if (loadedSet.size <= MAX_LOADED) return;
-    // Descarga los más lejanos dejando los más cercanos a viewport
-    var withDist = Array.from(loadedSet).map(function(el){
-      var rect = el.getBoundingClientRect();
-      var dist = Math.min(Math.abs(rect.top - window.innerHeight/2), Math.abs(rect.bottom - window.innerHeight/2));
-      return {el: el, dist: dist};
-    }).sort(function(a,b){ return a.dist - b.dist; });
-
-    // Mantén los primeros MAX_LOADED; descarga el resto
-    withDist.slice(MAX_LOADED).forEach(function(item){
-      item.el.src = "about:blank";
-      item.el.dataset.loaded = "";
-      loadedSet.delete(item.el);
-    });
-  }
 
   function loadIframe(el){
-    if (el.dataset.loaded === "true" || el.dataset.loaded === "loading") return;
+    if (el.dataset.loaded === "true") return;
     el.dataset.loaded = "loading";
     inFlight++;
     var realSrc = el.dataset.src;
-
-    function done(){
-      el.dataset.loaded = "true";
-      loadedSet.add(el);
-      inFlight--;
-      ensureLoadedBudget();
-      pump();
-    }
-
+    // Transfer data attributes like data-width/height if any (no-op here)
     el.addEventListener('load', function onLoad(){
+      el.dataset.loaded = "true";
       el.removeEventListener('load', onLoad);
-      done();
+      inFlight--;
+      pump();
     });
-
-    // iOS Safari a veces se queja si disparas cargas en ráfaga
-    var delay = (isIOS && isSafari) ? 120 : 0;
-    setTimeout(function(){
-      // evita navegaciones redundantes
-      if (el.src !== realSrc) el.src = realSrc;
-    }, delay);
+    // Some embeds (Datawrapper/Flourish) need pointer events enabled
+    el.style.pointerEvents = 'auto';
+    // Set src to trigger load
+    el.src = realSrc;
   }
 
   function pump(){
-    while (inFlight < MAX_CONCURRENT && queue.length){
+    while (inFlight < maxConcurrent && queue.length){
       var next = queue.shift();
       loadIframe(next);
     }
   }
 
   function enqueue(el){
-    if (el.dataset.loaded === "true" || el.dataset.loaded === "loading") return;
-    // evita duplicados en la cola
-    if (queue.indexOf(el) === -1) queue.push(el);
+    if (el.dataset.loaded) return;
+    queue.push(el);
     pump();
   }
 
-  var scrollTimer;
-  function onScrollThrottled(){
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(function(){
-      unloadFarIframes();
-      iframes.forEach(function(el){
-        var rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight + 600 && rect.bottom > -600){
-          enqueue(el);
-        }
-      });
-    }, (isIOS && isSafari) ? 150 : 80);
-  }
-
+  // As a progressive enhancement, use IntersectionObserver
   if ('IntersectionObserver' in window){
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(entry){
@@ -616,28 +546,33 @@
         }
       });
     }, { root: null, rootMargin: '600px 0px', threshold: 0.01 });
+
     iframes.forEach(function(el){ io.observe(el); });
   } else {
-    window.addEventListener('scroll', onScrollThrottled, {passive:true});
-    window.addEventListener('resize', onScrollThrottled);
-    onScrollThrottled();
+    // Fallback: load first two immediately, then on scroll throttle
+    iframes.slice(0, 2).forEach(enqueue);
+    var timer;
+    function onScroll(){
+      clearTimeout(timer);
+      timer = setTimeout(function(){
+        iframes.forEach(function(el){
+          var rect = el.getBoundingClientRect();
+          if (rect.top < window.innerHeight + 600 && rect.bottom > -600){
+            enqueue(el);
+          }
+        });
+      }, 100);
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll);
+    onScroll();
   }
 
-  // Pausa cargas cuando la pestaña no está visible
-  document.addEventListener('visibilitychange', function(){
-    if (document.hidden){
-      // no iniciamos nuevas cargas; el pump solo se llama al volver
-    } else {
-      pump();
-      onScrollThrottled();
-    }
-  });
-
-  // Asegura que al menos el primero arranque
+  // Safety: if user is idle at top, start by enqueueing the very first iframe after a short delay
   setTimeout(function(){
     var first = iframes[0];
     if (first && !first.dataset.loaded) enqueue(first);
-  }, (isIOS && isSafari) ? 200 : 100);
+  }, 300);
 })();
 </script>
 
