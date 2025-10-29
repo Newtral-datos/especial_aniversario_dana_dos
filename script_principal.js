@@ -1,11 +1,54 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+  // --- INICIO DE LA MODIFICACIÓN ---
+  
+  const isIPhone = /iPhone/i.test(navigator.userAgent);
+  
+  if (isIPhone) {
+    const urlIPhoneChart3 = 'https://i.imgur.com/MmnIC9V.png';
+    const originalChart3 = document.getElementById('chart-3');
+
+    // Comprobamos que 'chart-3' existe y es un iframe (para no romper nada)
+    if (originalChart3 && originalChart3.tagName === 'IFRAME') {
+      
+      // 1. Creamos el nuevo elemento <a>
+      const imageLink = document.createElement('a');
+      imageLink.id = originalChart3.id; // Mantenemos el ID 'chart-3'
+      imageLink.href = '#'; // Puedes poner un enlace si quieres, o dejar '#'
+      imageLink.target = '_blank';
+      imageLink.rel = 'noopener noreferrer';
+      
+      // 2. Le asignamos 'data-image="1"' para que coja los estilos CSS de las otras imágenes
+      imageLink.dataset.image = '1';
+      
+      // 3. Copiamos todas las clases del iframe original (opacity, z-index, transition...)
+      imageLink.className = originalChart3.className;
+
+      // 4. Creamos la <img> de dentro
+      const image = document.createElement('img');
+      image.src = urlIPhoneChart3;
+      image.alt = 'Gráfico estático para iPhone';
+      
+      // 5. Las conectamos
+      imageLink.appendChild(image);
+      
+      // 6. Reemplazamos el <iframe> por el <a> en el DOM
+      originalChart3.parentNode.replaceChild(imageLink, originalChart3);
+    }
+  }
+  // --- FIN DE LA MODIFICACIÓN ---
+
+
+  // El resto de tu script original sigue aquí, sin cambios.
+  // Ahora, cuando se defina el objeto 'charts', document.getElementById('chart-3')
+  // encontrará el <iframe> (en PC/Android) o el <a> (en iPhone).
+
   const steps = document.querySelectorAll('.step');
   
   const charts = {
     'chart-1': document.getElementById('chart-1'),
     'chart-2': document.getElementById('chart-2'),
-    'chart-3': document.getElementById('chart-3'),
+    'chart-3': document.getElementById('chart-3'), // ¡Este elemento ya es el correcto!
     'chart-4': document.getElementById('chart-4'),
     'chart-5': document.getElementById('chart-5'),
     'chart-6': document.getElementById('chart-6'),
@@ -49,6 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector(".chart-container");
     if (!frame || !container) return;
 
+    // Tu lógica original ya maneja esto perfectamente:
+    // Si es un <a> (imagen) o no es datawrapper, usa la altura completa.
     if (frame.tagName === 'A' || !frame.src.includes('datawrapper')) {
         let newHeight = '100vh';
         if (window.innerWidth >= 768) { 
@@ -56,14 +101,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         container.style.height = newHeight;
     }
-    // CORRECCIÓN: Comprobar que el iframe fijo esté cargado antes de enviar mensajes
-    else if (frame.tagName === 'IFRAME' && frame.src.includes('datawrapper') && frame.dataset.loaded === "true") {
+    // Si es un iframe de datawrapper, pide la altura.
+    else if (frame.tagName === 'IFRAME' && frame.src.includes('datawrapper')) {
          try {
-            if (frame.contentWindow) {
-              frame.contentWindow.postMessage({ 'datawrapper-height-query': true }, '*');
-            }
+           if (frame.contentWindow) {
+             frame.contentWindow.postMessage({ 'datawrapper-height-query': true }, '*');
+           }
          } catch (e) { 
-            console.warn("No se pudo enviar 'datawrapper-height-query' en resize", e);
+           console.warn("No se pudo enviar 'datawrapper-height-query' en resize", e);
          }
     }
   });
@@ -91,8 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector(".chart-container");
     if (!frame || !container) return;
 
-    // CORRECCIÓN: Comprobar que el iframe fijo esté cargado antes de enviar mensajes
-    if (frame.tagName === 'IFRAME' && frame.src.includes('datawrapper') && frame.dataset.loaded === "true") {
+    // Tu lógica original también maneja esto
+    if (frame.tagName === 'IFRAME' && frame.src.includes('datawrapper')) {
       try {
         if (frame.contentWindow) {
           frame.contentWindow.postMessage({ 'datawrapper-height-query': true }, '*');
@@ -127,8 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       const frame = charts[currentChartId];
-      // CORRECCIÓN: Comprobar que el iframe fijo esté cargado antes de enviar mensajes
-      if (frame && stepIndex != null && frame.tagName === 'IFRAME' && frame.src.includes('datawrapper') && frame.dataset.loaded === "true") {
+      // Y aquí, si el frame es un <a> (iPhone) no intentará enviar el postMessage. Perfecto.
+      if (frame && stepIndex != null && frame.tagName === 'IFRAME' && frame.src.includes('datawrapper')) {
         try {
             if (frame.contentWindow) {
               frame.contentWindow.postMessage({ 'datawrapper-viewer-goto-step': stepIndex }, '*');
