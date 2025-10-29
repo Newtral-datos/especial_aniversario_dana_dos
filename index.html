@@ -121,6 +121,10 @@
       <iframe loading="lazy" id="chart-2" src="about:blank" data-src="https://flo.uri.sh/visualisation/25783664/embed"
               frameborder="0" data-external="1"
               class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
+              
+      <iframe loading="lazy" id="chart-3" src="about:blank" data-src="https://datawrapper.dwcdn.net/4MT1z/1/"
+              frameborder="0" data-external="1"
+              class="lazy-iframe opacity-0 z-0 pointer-events-none transition-opacity duration-500 ease-in-out"></iframe>
       
       <iframe loading="lazy" id="chart-4" src="about:blank" data-src="https://datawrapper.dwcdn.net/jnaSD/4/"
               frameborder="0" data-external="1"
@@ -194,7 +198,7 @@
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
              data-chart-id="chart-1" data-step-index="0">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl"> 
-            <p><b>07.36.</b> Las zonas del interior de València amanecen bajo el <a href="https://x.com/AEMET_CValencia/status/1851151018395848816">aviso rojo de la Aemet</a> por precipitaciones, ampliándose la <a href="https://x.com/AEMET_CValencia/status/1851019693139657048">alerta naranja</a> emitida la noche anterior.</p>
+            <p><b>07.36.</b> Las zonas del interior de Valencia amanecen bajo el <a href="https://x.com/AEMET_CValencia/status/1851151018395848816">aviso rojo de la Aemet</a> por precipitaciones, ampliándose la <a href="https://x.com/AEMET_CValencia/status/1851019693139657048">alerta naranja</a> emitida la noche anterior.</p>
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
@@ -218,7 +222,7 @@
         </div>
 
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-4" data-step-index="0">
+             data-chart-id="chart-3" data-step-index="0">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>11.00.</b> El agua empieza a correr por la Rambla del Poyo. En solo media hora el barranco pasó de no contener ningún caudal a superar los 200 m3/s. Se trata de una cifra por encima de los 150 m3/s, el umbral de alerta alto establecido por la <a href="https://saih.chj.es/aforos/13873">Confederación Hidrográfica del Júcar</a> (CHJ). Según sus protocolos, una vez superada esta barrera se debe informar a las autoridades de emergencias.</p>
             <iframe loading="lazy" title="Gráfico Inferior 1"
@@ -228,25 +232,25 @@
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-4" data-step-index="1">
+             data-chart-id="chart-3" data-step-index="1">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Esta cifra es superior al caudal correspondiente con los periodos de retorno para 10 años (179 m3/s). Es decir, un umbral superior a esta cifra es algo que sólo se ve una vez cada 10 años.</p>
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-4" data-step-index="2">
+             data-chart-id="chart-3" data-step-index="2">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p><b>11.45.</b> El Cecopi emite un <a href="https://x.com/GVA112/status/1851223906029355347">aviso especial de alerta hidrológica</a> para los municipios de la cuenca del río Magro por posibles crecidas. Además, informa de <a href="https://x.com/GVA112/status/1851175465932689772">carreteras cortadas</a> y <a href="https://x.com/GVA112/status/1851214852687110589">personas atrapadas</a>.</p>
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-4" data-step-index="3">
+             data-chart-id="chart-3" data-step-index="3">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>Aunque emergencias comienza a recibir alertas por todo el litoral la mayoría de los eventos se concentran en Requena, situado en la zona interior de Valencia, como muestra el registro de incidentes elaborado a partir de las llamadas al 112.</p>
           </div>
         </div>
         <div class="step mb-[80vh] min-h-[70vh] flex flex-col items-center justify-center"
-             data-chart-id="chart-4" data-step-index="4">
+             data-chart-id="chart-3" data-step-index="4">
           <div class="step-content relative bg-white/80 backdrop-blur-md shadow-lg rounded-lg p-6 md:p-8 mx-4 max-w-3xl">
             <p>En el municipio las llamadas empiezan a recoger avisos por el desbordamiento del barranco y numerosos hogares inundados, teniéndose que rescatar únicamente a una persona atrapada en su vehículo.</p>
           </div>
@@ -496,85 +500,71 @@
 
   <script src="script_principal.js"></script>
 
-<script>
-(function(){
-  var iframes = Array.prototype.slice.call(document.querySelectorAll('iframe.lazy-iframe[data-src]'));
-  if (!iframes.length) return;
-
-  var maxConcurrent = 2; // limit concurrent loads
-  var inFlight = 0;
-  var queue = [];
-
-  function loadIframe(el){
-    if (el.dataset.loaded === "true") return;
-    el.dataset.loaded = "loading";
-    inFlight++;
-    var realSrc = el.dataset.src;
-    // Transfer data attributes like data-width/height if any (no-op here)
-    el.addEventListener('load', function onLoad(){
-      el.dataset.loaded = "true";
-      el.removeEventListener('load', onLoad);
-      inFlight--;
-      pump();
-    });
-    // Some embeds (Datawrapper/Flourish) need pointer events enabled
-    el.style.pointerEvents = 'auto';
-    // Set src to trigger load
-    el.src = realSrc;
-  }
-
-  function pump(){
-    while (inFlight < maxConcurrent && queue.length){
-      var next = queue.shift();
-      loadIframe(next);
-    }
-  }
-
-  function enqueue(el){
-    if (el.dataset.loaded) return;
-    queue.push(el);
-    pump();
-  }
-
-  // As a progressive enhancement, use IntersectionObserver
-  if ('IntersectionObserver' in window){
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if (entry.isIntersecting || entry.intersectionRatio > 0){
-          enqueue(entry.target);
-          io.unobserve(entry.target);
+  <script>
+    (function(){
+      // Select all iframes with a data-src attribute (which includes all charts)
+      var iframes = Array.prototype.slice.call(document.querySelectorAll('iframe.lazy-iframe[data-src]'));
+      if (!iframes.length) return;
+    
+      // Function to load the iframe's content
+      function loadIframe(el){
+        if (el.dataset.loaded) return;
+        
+        const realSrc = el.dataset.src;
+        
+        // Set src to trigger load
+        // This is the crucial part that must execute cleanly.
+        el.src = realSrc;
+        el.dataset.loaded = "true"; // Mark as loaded immediately
+        
+        // NOTE: Datawrapper/Flourish iframes are now set to pointer-events: auto 
+        // when they are the active chart by script_principal.js.
+        // The previous lazy-load script was setting it unconditionally, which 
+        // is now handled by the main script's showChart function.
+      }
+    
+      // Use IntersectionObserver for optimal lazy loading
+      if ('IntersectionObserver' in window){
+        var io = new IntersectionObserver(function(entries){
+          entries.forEach(function(entry){
+            // If the element is intersecting (or just above/below with the rootMargin)
+            if (entry.isIntersecting || entry.intersectionRatio > 0){
+              loadIframe(entry.target);
+              io.unobserve(entry.target); // Stop observing once loaded
+            }
+          });
+        }, { root: null, rootMargin: '600px 0px', threshold: 0.01 });
+    
+        iframes.forEach(function(el){ io.observe(el); });
+      } else {
+        // Fallback: load all visible/near-visible iframes on scroll (less efficient, but works)
+        var timer;
+        function onScroll(){
+          clearTimeout(timer);
+          timer = setTimeout(function(){
+            iframes.forEach(function(el){
+              var rect = el.getBoundingClientRect();
+              // Check if in viewport + 600px buffer
+              if (rect.top < window.innerHeight + 600 && rect.bottom > -600){
+                loadIframe(el);
+              }
+            });
+            // Remove scroll listener if all are loaded (not strictly needed, but efficient)
+            if (iframes.every(el => el.dataset.loaded)) {
+                 window.removeEventListener('scroll', onScroll);
+            }
+          }, 100);
         }
-      });
-    }, { root: null, rootMargin: '600px 0px', threshold: 0.01 });
-
-    iframes.forEach(function(el){ io.observe(el); });
-  } else {
-    // Fallback: load first two immediately, then on scroll throttle
-    iframes.slice(0, 2).forEach(enqueue);
-    var timer;
-    function onScroll(){
-      clearTimeout(timer);
-      timer = setTimeout(function(){
-        iframes.forEach(function(el){
-          var rect = el.getBoundingClientRect();
-          if (rect.top < window.innerHeight + 600 && rect.bottom > -600){
-            enqueue(el);
-          }
-        });
-      }, 100);
-    }
-    window.addEventListener('scroll', onScroll, {passive:true});
-    window.addEventListener('resize', onScroll);
-    onScroll();
-  }
-
-  // Safety: if user is idle at top, start by enqueueing the very first iframe after a short delay
-  setTimeout(function(){
-    var first = iframes[0];
-    if (first && !first.dataset.loaded) enqueue(first);
-  }, 300);
-})();
-</script>
+        // Load the first one immediately to ensure content appears quickly
+        iframes.slice(0, 1).forEach(loadIframe); 
+        
+        // Attach listeners
+        window.addEventListener('scroll', onScroll, {passive:true});
+        window.addEventListener('resize', onScroll);
+        onScroll(); // Initial check
+      }
+    })();
+    </script>
 
 </body>
 </html>
